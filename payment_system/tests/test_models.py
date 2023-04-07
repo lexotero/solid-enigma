@@ -150,7 +150,6 @@ class TestPayment(TestCase):
 
 
 class TestInteractions(TestCase):
-
     def setUp(self) -> None:
         self.invoices = [
             Invoice.create(amount=100),
@@ -165,12 +164,11 @@ class TestInteractions(TestCase):
                 (self.invoices[0], 50),
                 (self.invoices[1], 66),
                 (self.invoices[2], 999),
-            ]
+            ],
         )
         payment.execute()
         self.assertListEqual(
-            [invoice.outstanding for invoice in self.invoices],
-            [50, 933, 4554]
+            [invoice.outstanding for invoice in self.invoices], [50, 933, 4554]
         )
 
     def test_continuos_payments_to_multiple_invoices_check_outstanding_amounts(self):
@@ -180,7 +178,7 @@ class TestInteractions(TestCase):
                 (self.invoices[0], 100),
                 (self.invoices[1], 66),
                 (self.invoices[2], 999),
-            ]
+            ],
         )
         first_payment.execute()
         second_payment = Payment.create(
@@ -188,10 +186,9 @@ class TestInteractions(TestCase):
             transactions=[
                 (self.invoices[1], 933),
                 (self.invoices[2], 4554),
-            ]
+            ],
         )
         second_payment.execute()
         self.assertListEqual(
-            [invoice.outstanding for invoice in self.invoices],
-            [0, 0, 0]
+            [invoice.outstanding for invoice in self.invoices], [0, 0, 0]
         )
