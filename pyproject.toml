@@ -8,6 +8,7 @@ packages = [{include = "payment_exercise"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+rich = "^13.3.3"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -23,3 +23,20 @@ run the `poethepoet` tasks/scripts inside the venv. E.g.:
 poe lint
 poe unit
 ```
+
+## User Interface
+
+Although the modelling of the invoices and payments is implemented in `models.py` and 
+tested in `tests/test_models.py`, I thought it would be a bit more fun to create a
+really simple (and not too pretty) terminal-based UI. You can start it with:
+
+```shell
+python -m payment_system
+```
+
+NOTE#1 that the interface is pretty limited and is only meant to allow you to manually play
+with the creation of invoices and different payments to cover different amounts of
+any existing invoices.
+
+NOTE#2 There is no data persistency layer, so once the process is finished (CTLR + C or
+killed otherwise), all created payments and invoices will be lost.
