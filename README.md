@@ -2,6 +2,9 @@
 
 If you are here, you must know what this project is about so I'll safe you the details :)
 
+The name of the repository is simply GitHub's suggestion, and I liked the cryptic looking
+name.
+
 ## Getting started
 
 This is a Python 3.10 project. I use `poetry` to manage dependencies and `poethepoet` for
