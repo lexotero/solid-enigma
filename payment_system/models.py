@@ -18,6 +18,8 @@ class Timestamped:
 class Invoice(Timestamped):
     amount: float
     outstanding: float
+    # TODO: an invoice should probably has billing address information,
+    # and perhaps information about a product.
 
     @classmethod
     def create(cls, amount: float) -> Invoice:
