@@ -4,18 +4,14 @@ from payment_system.models import Invoice, Payment, Transaction
 
 
 class TestInvoice(TestCase):
-
     def test_create_with_amount_check_outstanding(self):
         invoice = Invoice.create(amount=100.0)
-        self.assertEqual(
-            invoice.outstanding,
-            100.0
-        )
+        self.assertEqual(invoice.outstanding, 100.0)
 
     def test_create_with_amount_check_timestamp(self):
         invoice = Invoice.create(amount=100.0)
         # We cannot use freezegun directly here because
-        # of how we use default_factory to set the 
+        # of how we use default_factory to set the
         # timestamp. We would need some hacky solution so
         # for now we simply make sure we get a timestamp
         self.assertIsNotNone(invoice.timestamp)
@@ -38,10 +34,7 @@ class TestInvoice(TestCase):
             invoice.pay_in(payment_amount=900.0)
         # A custom exception would be better here so we don't need
         # to test for the exception message
-        self.assertIn(
-            "maximum you can pay",
-            str(cm_error.exception)
-        )
+        self.assertIn("maximum you can pay", str(cm_error.exception))
 
     def test_pay_in_with_invoice_already_paid_check_exception(self):
         invoice = Invoice.create(amount=100.0)
@@ -50,49 +43,27 @@ class TestInvoice(TestCase):
             invoice.pay_in(payment_amount=50.0)
         # A custom exception would be better here so we don't need
         # to test for the exception message
-        self.assertIn(
-            "fully paid already",
-            str(cm_error.exception)
-        )
+        self.assertIn("fully paid already", str(cm_error.exception))
 
 
 class TestPayment(TestCase):
-
     def test_create_with_payee_and_single_transaction_check_payee(self):
         invoice = Invoice.create(amount=100.0)
-        payment = Payment.create(
-            payee="John Doe",
-            transactions=[
-                (invoice, 100.0)
-            ]
-        )
-        self.assertEqual(
-            payment.payee,
-            "John Doe"
-        )
+        payment = Payment.create(payee="John Doe", transactions=[(invoice, 100.0)])
+        self.assertEqual(payment.payee, "John Doe")
 
     def test_create_with_payee_and_single_transaction_check_timestamp(self):
         invoice = Invoice.create(amount=100.0)
-        payment = Payment.create(
-            payee="John Doe",
-            transactions=[
-                (invoice, 100.0)
-            ]
-        )
+        payment = Payment.create(payee="John Doe", transactions=[(invoice, 100.0)])
         # We cannot use freezegun directly here because
-        # of how we use default_factory to set the 
+        # of how we use default_factory to set the
         # timestamp. We would need some hacky solution so
         # for now we simply make sure we get a timestamp
         self.assertIsNotNone(payment.timestamp)
 
     def test_create_with_payee_and_single_transaction_check_transactions(self):
         invoice = Invoice.create(amount=100.0)
-        payment = Payment.create(
-            payee="John Doe",
-            transactions=[
-                (invoice, 100.0)
-            ]
-        )
+        payment = Payment.create(payee="John Doe", transactions=[(invoice, 100.0)])
         self.assertListEqual(
             payment.transactions,
             [
@@ -100,7 +71,7 @@ class TestPayment(TestCase):
                     amount=100.0,
                     invoice=invoice,
                 )
-            ]
+            ],
         )
 
     def test_create_with_payee_and_multiple_transaction_check_transactions(self):
@@ -110,7 +81,7 @@ class TestPayment(TestCase):
             transactions=[
                 (invoice, 10.0),
                 (invoice, 90.0),
-            ]
+            ],
         )
         self.assertListEqual(
             payment.transactions,
@@ -122,21 +93,15 @@ class TestPayment(TestCase):
                 Transaction(
                     amount=90.0,
                     invoice=invoice,
-                )
-            ]
+                ),
+            ],
         )
 
     def test_create_with_payee_and_no_transactions_check_empty_transactions(self):
         # In the future we probably want this to case an error
         # but for now we lock in the behaviour.
-        payment = Payment.create(
-            payee="John Doe",
-            transactions=[]
-        )
-        self.assertEqual(
-            payment.transactions,
-            []
-        )
+        payment = Payment.create(payee="John Doe", transactions=[])
+        self.assertEqual(payment.transactions, [])
 
     def test_execute_with_all_valid_transactions_check_invoices(self):
         invoice = Invoice.create(amount=100.0)
@@ -146,15 +111,12 @@ class TestPayment(TestCase):
                 (invoice, 10.0),
                 (invoice, 30.0),
                 (invoice, 40.0),
-            ]
+            ],
         )
         payment.execute()
         # The transaction amounts should cover 80 out of the
         # 100 of the invoice.
-        self.assertEqual(
-            invoice.outstanding,
-            20.0
-        )
+        self.assertEqual(invoice.outstanding, 20.0)
 
     def test_execute_with_invalid_transactions_check_exception(self):
         invoice = Invoice.create(amount=100.0)
@@ -165,7 +127,7 @@ class TestPayment(TestCase):
                 (invoice, 30.0),
                 # This transaction is invalid
                 (invoice, 940.0),
-            ]
+            ],
         )
         with self.assertRaises(Exception):
             payment.execute()
@@ -179,12 +141,9 @@ class TestPayment(TestCase):
                 (invoice, 30.0),
                 # This transaction is invalid
                 (invoice, 940.0),
-            ]
+            ],
         )
         with self.assertRaises(Exception):
             payment.execute()
         # No payments were made
-        self.assertEqual(
-            invoice.outstanding,
-            invoice.amount
-        )
+        self.assertEqual(invoice.outstanding, invoice.amount)

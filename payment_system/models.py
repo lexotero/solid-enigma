@@ -1,6 +1,9 @@
+# Avoid having to define TypeVars by postponing evaluation of annotations
+# This will be implicit from Python 3.11
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import TypeVar
 
 
 @dataclass
@@ -11,16 +14,13 @@ class Timestamped:
     timestamp: datetime = field(default_factory=datetime.utcnow, init=False)
 
 
-InvoiceType = TypeVar("InvoiceType", bound="Invoice")
-
-
 @dataclass
 class Invoice(Timestamped):
     amount: float
     outstanding: float
 
     @classmethod
-    def create(cls, amount: float) -> InvoiceType:
+    def create(cls, amount: float) -> Invoice:
         return cls(
             amount=amount,
             outstanding=amount,
@@ -36,9 +36,7 @@ class Invoice(Timestamped):
         if self.is_paid:
             # This could be a custom exception, e.g. InvalidPayment()
             # or something like that
-            raise Exception(
-                f"The invoice {id(self)} is fully paid already"
-            )
+            raise Exception(f"The invoice {id(self)} is fully paid already")
         if payment_amount > self.outstanding:
             # We could allow a request to pay more and simply
             # return the difference, but then the caller would have
@@ -57,34 +55,28 @@ class Invoice(Timestamped):
         return self.outstanding
 
 
-TransactionType = TypeVar("TransactionType", bound="Transaction")
-
-
 @dataclass
 class Transaction(Timestamped):
     amount: float
-    invoice: InvoiceType
-
-
-PaymentType = TypeVar("PaymentType", bound="Payment")
+    invoice: Invoice
 
 
 @dataclass
 class Payment(Timestamped):
     payee: str
-    transactions: list[TransactionType]
+    transactions: list[Transaction]
     # TODO: We probably want a boolean flag and perhaps
     # a timestamp set when the payment is executed.
 
     @classmethod
-    def create(cls, payee: str, transactions: list[tuple[InvoiceType, float]]) -> PaymentType:
+    def create(cls, payee: str, transactions: list[tuple[Invoice, float]]) -> Payment:
         instance = cls(
             payee=payee,
             # TODO: We should probably guard against payments with no transactions,
             # but let's keep it simple for now.
             transactions=[],
         )
-        for (invoice, amount) in transactions:
+        for invoice, amount in transactions:
             t = Transaction(
                 amount=amount,
                 invoice=invoice,

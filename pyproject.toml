@@ -12,7 +12,43 @@ python = "^3.10"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.2"
+black = "^23.3.0"
+isort = "^5.12.0"
+poethepoet = "^0.19.0"
+ruff = "^0.0.261"
+mypy = "^1.2.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+
+[tool.poe.tasks.format]
+sequence = [
+    "black --verbose .",
+    "isort --verbose .",
+]
+default_item_type = "cmd"
+
+
+[tool.poe.tasks.lint]
+sequence = [
+    "black --check --verbose .",
+    "isort --check --verbose .",
+    "ruff check .",
+    "mypy --verbose --namespace-packages --explicit-package-bases .",
+]
+default_item_type = "cmd"
+ignore_fail = "return_non_zero"
+
+[tool.poe.tasks.unit]
+sequence = [
+    "pytest ."
+]
+default_item_type = "cmd"
